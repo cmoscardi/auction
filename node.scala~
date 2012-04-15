@@ -1,9 +1,0 @@
-class Node(parent:Node, l_child:Node, r_child:Node) { 
-  var p = parent
-  var l = l_child
-  var r = r_child
-
-  
-
-
-}
