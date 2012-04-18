@@ -1,42 +1,69 @@
+import java.net.ServerSocket
+import scala.io.BufferedSource
+import java.io.PrintStream
+
 object Server {
-  def initialize(players: Int, bids: Int): Auction = {
+  def initialize(players: Int, bids: Int, server: ServerSocket): Auction = {
     println("Initializing keys for players")
-    val player_keys = (for (i <- 0 until players) yield 1).toList
-    println("Initializing server key")
-    val server_key = 1 
+    val player_keys = for {i <- 0 until players} yield {
+      val s = server.accept()
+      val in = new BufferedSource(s.getInputStream()).getLines()
+      val key = in.next().toInt
+      s.close()
+      key
+    }
+    println("Initializing server keys")
+    val server_key = (1, 1) // genkeys
 
     println("Initializing auction with " + players + " players and " + bids + " bids")
     println()
-    new Auction(players, bids, player_keys, server_key)
+    new Auction(players, bids, player_keys.toList, server_key)
   }
 
-  def takeTurn(results: Array[(Int, Int)], player: Int, bids: Int): Array[(Int, Int)] = {
-    results.foreach(println)
-    println("Please input your reencrypted results list.")
-    var newResults = new Array[(Int, Int)](results.size / bids)
-    for (i <- 0 until newResults.size) {
-      newResults(i) = (readInt, readInt)
+  def takeTurn(results: Array[State],
+               player: Int,
+               bids: Int,
+               server: ServerSocket): Array[State] = {
+    val s = server.accept()
+    println("Sending bids to player " + player)
+    val in = new BufferedSource(s.getInputStream()).getLines()
+    val out = new PrintStream(s.getOutputStream())
+    
+    results.foreach(out.println)
+    out.println("EOM")
+    out.flush()
+
+    var bidStrings = List[String]()
+    var bidString = in.next()
+    while (bidString != "EOM") {
+      bidStrings = bidString :: bidStrings
+      bidString = in.next()
     }
-    return newResults
+    s.close()
+    bidStrings.map(State.fromString).toArray
   }
 
-  def runAuction(auction: Auction) {
+  def runAuction(auction: Auction, server: ServerSocket) {
     println("Running auction")
-    var results = auction.collectNodes(auction.players).map(x => (x.winner, x.price)).toArray
     for (i <- 0 until auction.players) {
       val player = auction.players - 1 - i
       println("Waiting for answer from player " + player)
-      results = takeTurn(results, player, auction.bids)
+      auction.states = takeTurn(auction.states, player, auction.bids, server)
     }
-    println("Results: " + results.toList)
+    println("Results: " + auction.states(0))
   }
 
   def main(args: Array[String]) {
-    val players = 2
-    val bids = 3
-    val auction = initialize(players, bids)
+    println("Initializing server")
+    val server = new ServerSocket(8888)
+
+    val players = args(0).toInt
+    val bids = args(1).toInt
+    val auction = initialize(players, bids, server)
+
     println("Encrypting tree values")
-    auction.encryptTree()
-    runAuction(auction)
+    auction.encryptTree
+
+    runAuction(auction, server)
   }
 }
