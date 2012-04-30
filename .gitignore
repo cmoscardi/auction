@@ -1,4 +1,7 @@
 BetaVersionDlog*
 target*
 .ensime
+bin*
+*.properties
+*.dll
 *~

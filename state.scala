@@ -3,7 +3,7 @@ object State {
     if (index > 0)
       (for (i <- 0 until index;
             j <- 0 until bids;
-            k <- 0 until bids)
+            k <- 0 to j)
           yield new State(i, j, k)).toArray
     else
       Array(new State(0, 0, 0))
@@ -24,7 +24,7 @@ class State(
   def this(high_bidder: Int, high_bid: Int, next_bid: Int) =
     this(high_bidder, high_bid, next_bid, 0, 0)
 
-  def encryptState(key: Int) {
+  def encryptState(key: BigInt) {
     winner_enc = Cryptography.encrypt(key, high_bidder)
     price_enc = Cryptography.encrypt(key, next_bid)
   }
@@ -38,7 +38,7 @@ class State(
     var highBidder = high_bidder
     var highBid = high_bid
     var nextBid = next_bid
-    if (bid > high_bid) {
+    if (bid >= high_bid) {
       nextBid = high_bid
       highBidder = player
       highBid = bid

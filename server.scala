@@ -1,24 +1,60 @@
 import java.net.ServerSocket
 import scala.io.BufferedSource
 import java.io.PrintStream
+import scala.util.Random
+
 
 object Server {
   def initialize(players: Int, bids: Int, server: ServerSocket): Auction = {
+    println("Initializing server keys")
+    
+    val pub_key = Cryptography.genPrime()
+    val rnd = new Random()
+    val priv_key = Cryptography.priv_key(pub_key._2, rnd)
+    val server_key = pub_key._3.modPow(priv_key,pub_key._1)
+    print("PUB: ")
+    println(pub_key)
+    print("PRIV: ")
+    println(priv_key)
+    
+    println("Awaiting player connections,,,")
+    for(i<- 0 until players) {
+      val s = server.accept()
+      val in = new BufferedSource(s.getInputStream()) 
+      val out = new PrintStream(s.getOutputStream())
+      println("Player " + i + " connected")
+      out.println(i)
+      out.println(bids)
+      out.println(pub_key._1)
+      out.println(pub_key._2)
+      out.println(pub_key._3)
+      out.flush()
+      s.close()
+    }
+
+
     println("Initializing keys for players")
     val player_keys = for {i <- 0 until players} yield {
       val s = server.accept()
       val in = new BufferedSource(s.getInputStream()).getLines()
-      val key = in.next().toInt
+      val key = BigInt(in.next())
+      println("Received player " + i + " key")
       s.close()
       key
     }
-    println("Initializing server keys")
-    val server_key = (1, 1) // genkeys
+
+    player_keys.zipWithIndex.foreach{ x =>
+      val (k,i) = x
+      println(i+" " + k)
+    }
+    
+   
 
     println("Initializing auction with " + players + " players and " + bids + " bids")
     println()
     new Auction(players, bids, player_keys.toList, server_key)
   }
+
 
   def takeTurn(results: Array[State],
                player: Int,
@@ -32,14 +68,18 @@ object Server {
     results.foreach(out.println)
     out.println("EOM")
     out.flush()
-
+    s.close()
+    
+    val s2 = server.accept()
+    val in2 = new BufferedSource(s2.getInputStream()).getLines()
+ 
     var bidStrings = List[String]()
-    var bidString = in.next()
+    var bidString = in2.next()
     while (bidString != "EOM") {
       bidStrings = bidString :: bidStrings
-      bidString = in.next()
+      bidString = in2.next()
     }
-    s.close()
+    s2.close()
     bidStrings.map(State.fromString).toArray
   }
 
@@ -50,7 +90,9 @@ object Server {
       println("Waiting for answer from player " + player)
       auction.states = takeTurn(auction.states, player, auction.bids, server)
     }
-    println("Results: " + auction.states(0))
+    println("Results: ")
+    for(state <- auction.states)
+      println(state)	      
   }
 
   def main(args: Array[String]) {
