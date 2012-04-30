@@ -93,6 +93,7 @@ object Server {
       val player = auction.players - 1 - i
       println("Waiting for answer from player " + player)
       auction.states = takeTurn(auction.states, player, auction.bids, server)
+      auction.states.foreach(x => println(x.winner_enc + " ::: "+ x.price_enc))
     }
     println("Hit enter to do the FINAL DECRYPTION")
     readLine

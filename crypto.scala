@@ -1,6 +1,7 @@
 import scala.util.Random
 
 object Cryptography {
+  val BIT_SIZE = 256
   def encrypt(key: BigInt, modulus:BigInt, value: BigInt) = {
     (key * value) % modulus
   }
@@ -15,20 +16,20 @@ object Cryptography {
   //returns (p,q,g)   
   def genPrime():(BigInt , BigInt, BigInt) = {
     val rnd = new Random()
-    var prime = BigInt.probablePrime(256, rnd)
+    var prime = BigInt.probablePrime(BIT_SIZE, rnd)
     var safe = false
     while(!safe){
       if(((prime-BigInt(1))/BigInt(2)).isProbablePrime(100))
         safe = true
       else
-        prime = BigInt.probablePrime(256,rnd)
+        prime = BigInt.probablePrime(BIT_SIZE,rnd)
     }
     (prime,(prime-BigInt(1))/BigInt(2), findGenerator(prime))
 
   }
 
   //finds a generator for q-order multiplicative 
-  //subgroup, not p
+  //subgroup, not p. in practice almost always 2 or 3
   def findGenerator(prime: BigInt):BigInt = {
     var generator = false
     var counter = 2
