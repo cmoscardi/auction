@@ -9,8 +9,8 @@ object State {
       Array(new State(0, 0, 0))
 
   def fromString(string: String): State = {
-    val values = string.split(" ").map(_.toInt)
-    new State(values(0), values(1), values(2), values(3), values(4)) 
+    val values = string.split(" ")
+    new State(values(0).toInt, values(1).toInt, values(2).toInt, BigInt(values(3)), BigInt(values(4))) 
   }
 
 }
@@ -19,19 +19,19 @@ class State(
     val high_bidder: Int,
     val high_bid: Int,
     val next_bid: Int,
-    var winner_enc: Int,
-    var price_enc: Int) {
+    var winner_enc: BigInt,
+    var price_enc: BigInt) {
   def this(high_bidder: Int, high_bid: Int, next_bid: Int) =
-    this(high_bidder, high_bid, next_bid, 0, 0)
+    this(high_bidder, high_bid, next_bid, BigInt(0), BigInt(0))
 
-  def encryptState(key: BigInt) {
-    winner_enc = Cryptography.encrypt(key, high_bidder)
-    price_enc = Cryptography.encrypt(key, next_bid)
+  def encryptState(key: BigInt, modulus:BigInt) {
+    winner_enc = Cryptography.encrypt(key, modulus, BigInt(high_bidder))
+    price_enc = Cryptography.encrypt(key, modulus, BigInt(next_bid))
   }
 
-  def reencryptState(key: Int) {
-    winner_enc = Cryptography.encrypt(key, winner_enc)
-    price_enc = Cryptography.encrypt(key, price_enc)
+  def reencryptState(key: BigInt, modulus:BigInt, generator:BigInt) {
+    winner_enc = Cryptography.decrypt(key,generator, modulus, winner_enc)
+    price_enc = Cryptography.decrypt(key,generator, modulus, price_enc)
   }
 
   def afterBid(player: Int, bid: Int): State = {

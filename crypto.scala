@@ -1,10 +1,16 @@
 import scala.util.Random
 
 object Cryptography {
-  def encrypt(key: BigInt, value: Int) = value
+  def encrypt(key: BigInt, modulus:BigInt, value: BigInt) = {
+    (key * value) % modulus
+  }
 
-  def decrypt(key: BigInt, value: Int) = value
-
+  def decrypt(priv_key: BigInt, generator:BigInt, modulus:BigInt, value: BigInt) = {
+    val q = ((modulus-BigInt(1))/2) - priv_key
+    val multiply = generator.modPow(q,modulus)
+    (value * multiply)%modulus
+  }
+  
 
   //returns (p,q,g)   
   def genPrime():(BigInt , BigInt, BigInt) = {

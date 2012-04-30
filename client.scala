@@ -102,7 +102,7 @@ class Client(val index: Int,
       val oldState = oldStates.find(_ == newState.afterBid(index, bid)).get
       newState.winner_enc = oldState.winner_enc
       newState.price_enc = oldState.price_enc
-      //newState.reencryptState(keypair._2)
+      newState.reencryptState(priv_key, pub_key(0),pub_key(2))
       newStates(i) = newState
     }
     newStates

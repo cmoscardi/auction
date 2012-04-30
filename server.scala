@@ -5,7 +5,7 @@ import scala.util.Random
 
 
 object Server {
-  def initialize(players: Int, bids: Int, server: ServerSocket): Auction = {
+  def initialize(players: Int, bids: Int, server: ServerSocket): (Auction,(BigInt, BigInt, BigInt),BigInt) = {
     println("Initializing server keys")
     
     val pub_key = Cryptography.genPrime()
@@ -25,9 +25,9 @@ object Server {
       println("Player " + i + " connected")
       out.println(i)
       out.println(bids)
-      out.println(pub_key._1)
-      out.println(pub_key._2)
-      out.println(pub_key._3)
+      out.println(pub_key._1) //p
+      out.println(pub_key._2) //q 
+      out.println(pub_key._3) //g
       out.flush()
       s.close()
     }
@@ -52,7 +52,10 @@ object Server {
 
     println("Initializing auction with " + players + " players and " + bids + " bids")
     println()
-    new Auction(players, bids, player_keys.toList, server_key)
+    (new Auction(players, bids, player_keys.toList, server_key, pub_key._1),
+     pub_key,
+     priv_key
+    )
   }
 
 
@@ -83,16 +86,21 @@ object Server {
     bidStrings.map(State.fromString).toArray
   }
 
-  def runAuction(auction: Auction, server: ServerSocket) {
+  def runAuction(auction: Auction, server: ServerSocket,
+      		 p:BigInt, g:BigInt, priv_key:BigInt) {
     println("Running auction")
     for (i <- 0 until auction.players) {
       val player = auction.players - 1 - i
       println("Waiting for answer from player " + player)
       auction.states = takeTurn(auction.states, player, auction.bids, server)
     }
+    println("Hit enter to do the FINAL DECRYPTION")
+    readLine
     println("Results: ")
-    for(state <- auction.states)
+    for(state <- auction.states){
+      state.reencryptState(priv_key, p, g)
       println(state)	      
+    }
   }
 
   def main(args: Array[String]) {
@@ -104,8 +112,8 @@ object Server {
     val auction = initialize(players, bids, server)
 
     println("Encrypting tree values")
-    auction.encryptTree
+    auction._1.encryptTree
 
-    runAuction(auction, server)
+    runAuction(auction._1, server, auction._2._1,auction._2._3, auction._3)
   }
 }
