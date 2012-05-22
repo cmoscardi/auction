@@ -2,15 +2,15 @@ object State {
   def genStates(index: Int, bids: Int): Array[State] =
     if (index > 0)
       (for (i <- 0 until index;
-            j <- 0 until bids;
-            k <- 0 to j)
+            j <- 1 to bids;
+            k <- 1 to j)
           yield new State(i, j, k)).toArray
     else
-      Array(new State(0, 0, 0))
+      Array(new State(0, 1, 1))
 
   def fromString(string: String): State = {
     val values = string.split(" ")
-    new State(values(0).toInt, values(1).toInt, values(2).toInt, BigInt(values(3)), BigInt(values(4))) 
+    new State(values(0).toInt, values(1).toInt, values(2).toInt, BigInt(values(3)), BigInt(values(4)),BigInt(values(5)),BigInt(values(6))) 
   }
 
 }
@@ -20,18 +20,43 @@ class State(
     val high_bid: Int,
     val next_bid: Int,
     var winner_enc: BigInt,
-    var price_enc: BigInt) {
+    var price_enc: BigInt,
+    var c_1_winner: BigInt,
+    var c_1_price: BigInt) {
   def this(high_bidder: Int, high_bid: Int, next_bid: Int) =
-    this(high_bidder, high_bid, next_bid, BigInt(0), BigInt(0))
+    this(high_bidder, high_bid, next_bid, BigInt(high_bidder), BigInt(next_bid),BigInt(0),BigInt(0))
 
   def encryptState(key: BigInt, modulus:BigInt) {
     winner_enc = Cryptography.encrypt(key, modulus, BigInt(high_bidder))
     price_enc = Cryptography.encrypt(key, modulus, BigInt(next_bid))
   }
 
+  def decryptState(key:BigInt, modulus:BigInt, generator:BigInt) { 
+    winner_enc = Cryptography.decrypt(c_1_winner,key,generator,modulus,winner_enc)
+    price_enc = Cryptography.decrypt(c_1_price,key,generator,modulus,price_enc)
+
+
+
+  }
+
   def reencryptState(key: BigInt, modulus:BigInt, generator:BigInt) {
-    winner_enc = Cryptography.decrypt(key,generator, modulus, winner_enc)
-    price_enc = Cryptography.decrypt(key,generator, modulus, price_enc)
+    val winner_things = Cryptography.recrypt(c_1_winner,
+					 key,
+					 generator, 
+					 modulus, 
+					 winner_enc)
+
+    val price_enc_things = Cryptography.recrypt(c_1_price,
+					    key,
+					    generator, 
+					    modulus, 
+					    price_enc)
+
+    winner_enc = winner_things._1
+    c_1_winner = winner_things._2
+
+    price_enc = price_enc_things._1
+    c_1_price = price_enc_things._2
   }
 
   def afterBid(player: Int, bid: Int): State = {
@@ -49,7 +74,7 @@ class State(
   }
 
   override def toString(): String =
-    List(high_bidder, high_bid, next_bid, winner_enc, price_enc).map(_.toString).reduceLeft((x, y) => x + " " + y)
+    List(high_bidder, high_bid, next_bid, winner_enc, price_enc,c_1_winner,c_1_price).map(_.toString).reduceLeft((x, y) => x + " " + y)
 
   override def equals(other: Any): Boolean = {
     other match {

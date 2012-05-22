@@ -35,6 +35,10 @@ object Client {
   }
 
   def sendStates(states: Array[State]) {
+    println("======NEW STATES======")
+    for(state <- states){ 
+      println(state)
+    }
     val s = new Socket(InetAddress.getByName("localhost"), 8888)
     val in = new BufferedSource(s.getInputStream())
     val out = new PrintStream(s.getOutputStream())  
@@ -83,9 +87,11 @@ object Client {
     readLine
 
     
-
     val states = getStates()
-    println("What's your bid? 0-" + bids)
+    for(state <- states){ 
+      println(state)
+    }
+    println("What's your bid? 1-" + bids)
     sendStates(client.pickStates(states.toArray, readInt, bids))
   }
 }
@@ -105,6 +111,7 @@ class Client(val index: Int,
       newState.reencryptState(priv_key, pub_key(0),pub_key(2))
       newStates(i) = newState
     }
+
     newStates
   }
 }
