@@ -32,14 +32,16 @@ class State(
   }
 
   def decryptState(key:BigInt, modulus:BigInt, generator:BigInt) { 
+    println("C_1_winner = "+c_1_winner)
+    println("C_!_price = "+c_1_price)
+    println("C_2_winner = "+winner_enc)
+    println("C_2_price = "+price_enc)
     winner_enc = Cryptography.decrypt(c_1_winner,key,generator,modulus,winner_enc)
     price_enc = Cryptography.decrypt(c_1_price,key,generator,modulus,price_enc)
-
-
-
   }
 
   def reencryptState(key: BigInt, modulus:BigInt, generator:BigInt) {
+    //println("this state is == " + toString())
     val winner_things = Cryptography.recrypt(c_1_winner,
 					 key,
 					 generator, 

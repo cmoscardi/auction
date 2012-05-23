@@ -106,8 +106,13 @@ class Client(val index: Int,
     for (i <- 0 until newStates.length) {
       val newState = newStates(i) 
       val oldState = oldStates.find(_ == newState.afterBid(index, bid)).get
+      println("taking data from: "+ oldState.toString())
+      println("going into state: " + newState.toString())
       newState.winner_enc = oldState.winner_enc
       newState.price_enc = oldState.price_enc
+      newState.c_1_winner = oldState.c_1_winner
+      newState.c_1_price = oldState.c_1_price
+
       newState.reencryptState(priv_key, pub_key(0),pub_key(2))
       newStates(i) = newState
     }

@@ -1,14 +1,18 @@
 import scala.util.Random
 
 object Cryptography {
-  val BIT_SIZE = 128
+  val BIT_SIZE = 16
   def encrypt(key: BigInt, modulus:BigInt, value: BigInt) = {
     (key * value) % modulus
   }
 
   def decrypt(c_1:BigInt, priv_key: BigInt, generator:BigInt, modulus:BigInt, value: BigInt) = {
+    println("modulus = " +modulus)
+    println("server priv = " +priv_key)
+    println("g = " + generator)
     val q = ((modulus-BigInt(1))/2) - priv_key
-    val multiply = generator.modPow(q,modulus)
+    val multiply = c_1.modPow(q,modulus)
+    println("inverse = " + multiply)
     (value * multiply)%modulus
   }
 
@@ -18,11 +22,14 @@ object Cryptography {
 	      generator:BigInt, 
 	      modulus:BigInt, 
 	      value:BigInt):(BigInt,BigInt) = { 
-    val inv = c_1.modPow(((modulus-BigInt(1))/BigInt(2))-key,modulus)
+    val q = (modulus-BigInt(1))/BigInt(2)
+    val inv = c_1.modPow(q-key,modulus)
+    println("C_1 == " + c_1)
+    println("INV = " + inv)
     val rnd = new Random()
     //somewhat abusive of the priv_key function
-    val y = priv_key(modulus,rnd)
-
+    val y = priv_key(q,rnd)
+    println("y= "+y)
     val new_c_1 = c_1.modPow(y,modulus)
     val new_encryption = (value * inv).modPow(y,modulus)
     (new_encryption, new_c_1)
