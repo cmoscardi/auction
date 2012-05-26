@@ -2,8 +2,10 @@ import scala.util.Random
 
 object Cryptography {
   val BIT_SIZE = 16
-  def encrypt(key: BigInt, modulus:BigInt, value: BigInt) = {
-    (key * value) % modulus
+  def encrypt(key: BigInt, modulus:BigInt, generator:BigInt, message: BigInt) = {
+    val encrypted =  (key * generator.modPow(message,modulus)) % modulus
+    println("g^"+message+" == "+ encrypted)
+    encrypted
   }
 
   def decrypt(c_1:BigInt, priv_key: BigInt, generator:BigInt, modulus:BigInt, value: BigInt) = {
@@ -16,12 +18,13 @@ object Cryptography {
     (value * multiply)%modulus
   }
 
-  //decrypts and re-randomizes, returns 1) h^(r1*r2), and 2) the new message with one x_i removed
+  //strips and re-randomizes
   def recrypt(c_1:BigInt, 
 	      key: BigInt, 
+	      pub_key:BigInt,
 	      generator:BigInt, 
 	      modulus:BigInt, 
-	      value:BigInt):(BigInt,BigInt) = { 
+	      value:BigInt):(BigInt,BigInt,BigInt) = { 
     val q = (modulus-BigInt(1))/BigInt(2)
     val inv = c_1.modPow(q-key,modulus)
     println("C_1 == " + c_1)
@@ -30,9 +33,10 @@ object Cryptography {
     //somewhat abusive of the priv_key function
     val y = priv_key(q,rnd)
     println("y= "+y)
-    val new_c_1 = c_1.modPow(y,modulus)
-    val new_encryption = (value * inv).modPow(y,modulus)
-    (new_encryption, new_c_1)
+    val new_c_1 = (c_1 * generator.modPow(y,modulus))%modulus
+    val new_pub_key = (pub_key * generator.modPow(q-key,modulus))%modulus
+    val new_encryption = ((value * inv) * new_pub_key.modPow(y,modulus))%modulus    
+    (new_encryption, new_c_1, new_pub_key)
   }
   
 

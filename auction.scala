@@ -10,7 +10,8 @@ class Auction(
   def encryptTree {
     val big_key = (server_key :: player_keys).reduceLeft( (a,b) => (a*b)%modulus)
     for (state <- states) {
-      state.encryptState(big_key, modulus)
+      state.encryptState(big_key, modulus, generator)
+      state.pub_key = big_key
       //i am assuming this is acceptable
       //it sets y=1, since c1 = g^y (in this case g^1)
       println("GENERATOR == " + generator)
@@ -19,4 +20,5 @@ class Auction(
     }
   }
     
+
 }

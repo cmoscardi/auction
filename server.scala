@@ -101,11 +101,29 @@ object Server {
     readLine
     println("Results: ")
     for(state <- auction.states){
-      state.decryptState(priv_key, p, g)
-      println(state)	      
+      state.reencryptState(priv_key, p, g)
+      println("WINNER [g^winner]: " + state.winner_enc)
+      println("PRICE [g^price]: " + state.price_enc)
+      println("WINNER: " + findPow(state.winner_enc,g,p))
+      println("PRICE: " + findPow(state.price_enc,g,p))
     }
   }
 
+  def findPow(value:BigInt,g:BigInt,p:BigInt):Int = { 
+    var i = 0
+    var number = BigInt(1)
+    var found = false
+    while(!found){ 
+      if(number==value){ 
+	found = true
+      }
+      else{ 
+	number = (number*g)%p
+	i=i+1
+      }
+    }
+    i //return
+  }
   def main(args: Array[String]) {
     println("Initializing server")
     val server = new ServerSocket(8888)

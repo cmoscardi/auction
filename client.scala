@@ -112,7 +112,7 @@ class Client(val index: Int,
       newState.price_enc = oldState.price_enc
       newState.c_1_winner = oldState.c_1_winner
       newState.c_1_price = oldState.c_1_price
-
+      newState.pub_key = oldState.pub_key
       newState.reencryptState(priv_key, pub_key(0),pub_key(2))
       newStates(i) = newState
     }
