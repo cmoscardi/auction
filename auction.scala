@@ -14,7 +14,6 @@ class Auction(
       state.pub_key = big_key
       //i am assuming this is acceptable
       //it sets y=1, since c1 = g^y (in this case g^1)
-      println("GENERATOR == " + generator)
       state.c_1_winner = generator
       state.c_1_price = generator
     }

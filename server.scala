@@ -95,7 +95,7 @@ object Server {
       val player = auction.players - 1 - i
       println("Waiting for answer from player " + player)
       auction.states =  takeTurn(auction.states, player, auction.bids, server)
-      auction.states.foreach(x => println(x.winner_enc + " ::: "+ x.price_enc))
+  //    auction.states.foreach(x => println(x.winner_enc + " ::: "+ x.price_enc))
     }
     println("Hit enter to do the final decryption")
     readLine
@@ -132,9 +132,6 @@ object Server {
     val auction = initialize(players, bids, server)
     println("Encrypting tree values")
     auction._1.encryptTree
-    for(state <- auction._1.states){ 
-      println(state)
-    }
     runAuction(auction._1, server, auction._2._1,auction._2._3, auction._3)
   }
 }

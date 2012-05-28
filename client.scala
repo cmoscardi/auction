@@ -35,10 +35,6 @@ object Client {
   }
 
   def sendStates(states: Array[State]) {
-    println("======NEW STATES======")
-    for(state <- states){ 
-      println(state)
-    }
     val s = new Socket(InetAddress.getByName("localhost"), 8888)
     val in = new BufferedSource(s.getInputStream())
     val out = new PrintStream(s.getOutputStream())  
@@ -88,9 +84,6 @@ object Client {
 
     
     val states = getStates()
-    for(state <- states){ 
-      println(state)
-    }
     println("What's your bid? 1-" + bids)
     sendStates(client.pickStates(states.toArray, readInt, bids))
   }
@@ -106,8 +99,8 @@ class Client(val index: Int,
     for (i <- 0 until newStates.length) {
       val newState = newStates(i) 
       val oldState = oldStates.find(_ == newState.afterBid(index, bid)).get
-      println("taking data from: "+ oldState.toString())
-      println("going into state: " + newState.toString())
+     // println("taking data from: "+ oldState.toString())
+     // println("going into state: " + newState.toString())
       newState.winner_enc = oldState.winner_enc
       newState.price_enc = oldState.price_enc
       newState.c_1_winner = oldState.c_1_winner
