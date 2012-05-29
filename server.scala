@@ -101,8 +101,9 @@ object Server {
     readLine
     println("Results: ")
     for(state <- auction.states){
+      state.pub_key = Cryptography.strip_pub_key(state.pub_key, priv_key, g, p, q)
       state.reencryptState(priv_key, p,q, g)
-      println("WINNER [g^winner]: " + state.winner_enc)
+      println("WINNER [g^winner]:d " + state.winner_enc)
       println("PRICE [g^price]: " + state.price_enc)
       println("WINNER: " + findPow(state.winner_enc,g,p))
       println("PRICE: " + findPow(state.price_enc,g,p))

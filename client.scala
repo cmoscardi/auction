@@ -2,7 +2,7 @@ import java.net.{InetAddress, ServerSocket, Socket, SocketException}
 import scala.io.BufferedSource
 import java.io.PrintStream
 import scala.util.Random
-
+import scala.compat.Platform
 
 object Client {
   def sendKey(client: Client) {
@@ -106,6 +106,7 @@ class Client(val index: Int,
 					         pub_key(0),
 						 pub_key(1))
     println("new pub key = " +new_pub_key)
+    val start = Platform.currentTime
     for (i <- 0 until newStates.length) {
       val newState = newStates(i) 
       val oldState = oldStates.find(_ == newState.afterBid(index, bid)).get
@@ -119,6 +120,9 @@ class Client(val index: Int,
       newState.reencryptState(priv_key, pub_key(0),pub_key(1),pub_key(2))
       newStates(i) = newState
     }
+    val finish = Platform.currentTime
+    val elapsed = finish-start
+    println("time elapsed: " + elapsed+"ms")
 
     newStates
   }
