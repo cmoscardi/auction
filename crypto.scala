@@ -1,7 +1,7 @@
 import scala.util.Random
 
 object Cryptography {
-  val BIT_SIZE = 512
+  val BIT_SIZE = 64
   def encrypt(key: BigInt, modulus:BigInt, generator:BigInt, message: BigInt) = {
     (key * generator.modPow(message,modulus)) % modulus
   }
@@ -11,8 +11,7 @@ object Cryptography {
     val multiply = c_1.modPow(q,modulus)
     (value * multiply)%modulus
   }
-  def strip_pub_key(pub_key:BigInt, priv_key:BigInt, generator:BigInt, modulus:BigInt) = { 
-    val q = (modulus - BigInt(1))/BigInt(2)
+  def strip_pub_key(pub_key:BigInt, priv_key:BigInt, generator:BigInt, modulus:BigInt,q:BigInt) = { 
     val inv = generator.modPow(q-priv_key,modulus)
     pub_key*inv    
   }

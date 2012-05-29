@@ -94,12 +94,18 @@ class Client(val index: Int,
 
 
   def pickStates(oldStates: Array[State], bid: Int, bids: Int): Array[State] = {
+   // println("p="+pub_key(0))
+   // println("q="+pub_key(1))
+   // println("g="+pub_key(2))
     val newStates = State.genStates(index, bids)
     val current_pub_key = oldStates(0).pub_key
+    println("current pub key = "+current_pub_key)
     val new_pub_key = Cryptography.strip_pub_key(oldStates(0).pub_key,
 					         priv_key,
 					         pub_key(2),
-					         pub_key(0))
+					         pub_key(0),
+						 pub_key(1))
+    println("new pub key = " +new_pub_key)
     for (i <- 0 until newStates.length) {
       val newState = newStates(i) 
       val oldState = oldStates.find(_ == newState.afterBid(index, bid)).get
