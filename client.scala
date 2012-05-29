@@ -61,7 +61,6 @@ object Client {
     // (p,q,g)
     val rnd = new Random()
     val priv_key = Cryptography.priv_key(pub_key(1),rnd)
-    println("Priv Key:" + "\n" + priv_key)
     val client = new Client(index.toInt, priv_key, pub_key.toList)
     s.close()
     (client, bids.toInt)
@@ -96,6 +95,11 @@ class Client(val index: Int,
 
   def pickStates(oldStates: Array[State], bid: Int, bids: Int): Array[State] = {
     val newStates = State.genStates(index, bids)
+    val current_pub_key = oldStates(0).pub_key
+    val new_pub_key = Cryptography.strip_pub_key(oldStates(0).pub_key,
+					         priv_key,
+					         pub_key(2),
+					         pub_key(0))
     for (i <- 0 until newStates.length) {
       val newState = newStates(i) 
       val oldState = oldStates.find(_ == newState.afterBid(index, bid)).get
@@ -105,8 +109,8 @@ class Client(val index: Int,
       newState.price_enc = oldState.price_enc
       newState.c_1_winner = oldState.c_1_winner
       newState.c_1_price = oldState.c_1_price
-      newState.pub_key = oldState.pub_key
-      newState.reencryptState(priv_key, pub_key(0),pub_key(2))
+      newState.pub_key = new_pub_key
+      newState.reencryptState(priv_key, pub_key(0),pub_key(1),pub_key(2))
       newStates(i) = newState
     }
 

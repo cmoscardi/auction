@@ -11,23 +11,26 @@ object Cryptography {
     val multiply = c_1.modPow(q,modulus)
     (value * multiply)%modulus
   }
-
+  def strip_pub_key(pub_key:BigInt, priv_key:BigInt, generator:BigInt, modulus:BigInt) = { 
+    val q = (modulus - BigInt(1))/BigInt(2)
+    val inv = generator.modPow(q-priv_key,modulus)
+    pub_key*inv    
+  }
   //strips and re-randomizes
   def recrypt(c_1:BigInt, 
 	      key: BigInt, 
 	      pub_key:BigInt,
+	      q:BigInt,
 	      generator:BigInt, 
 	      modulus:BigInt, 
-	      value:BigInt):(BigInt,BigInt,BigInt) = { 
-    val q = (modulus-BigInt(1))/BigInt(2)
+	      value:BigInt):(BigInt,BigInt) = { 
     val inv = c_1.modPow(q-key,modulus)
     val rnd = new Random()
     //somewhat abusive of the priv_key function
     val y = priv_key(q,rnd)
     val new_c_1 = (c_1 * generator.modPow(y,modulus))%modulus
-    val new_pub_key = (pub_key * generator.modPow(q-key,modulus))%modulus
-    val new_encryption = ((value * inv) * new_pub_key.modPow(y,modulus))%modulus    
-    (new_encryption, new_c_1, new_pub_key)
+    val new_encryption = ((value * inv) * pub_key.modPow(y,modulus))%modulus    
+    (new_encryption, new_c_1)
   }
   
 

@@ -88,7 +88,7 @@ object Server {
   }
 
   def runAuction(auction: Auction, server: ServerSocket,
-      		 p:BigInt, g:BigInt, priv_key:BigInt) {
+      		 p:BigInt,q:BigInt, g:BigInt, priv_key:BigInt) {
     println("Running auction")
  
     for (i <- 0 until auction.players) {
@@ -101,7 +101,7 @@ object Server {
     readLine
     println("Results: ")
     for(state <- auction.states){
-      state.reencryptState(priv_key, p, g)
+      state.reencryptState(priv_key, p,q, g)
       println("WINNER [g^winner]: " + state.winner_enc)
       println("PRICE [g^price]: " + state.price_enc)
       println("WINNER: " + findPow(state.winner_enc,g,p))
@@ -132,6 +132,6 @@ object Server {
     val auction = initialize(players, bids, server)
     println("Encrypting tree values")
     auction._1.encryptTree
-    runAuction(auction._1, server, auction._2._1,auction._2._3, auction._3)
+    runAuction(auction._1, server, auction._2._1,auction._2._2,auction._2._3, auction._3)
   }
 }
