@@ -1,7 +1,7 @@
 import scala.util.Random
 
 object Cryptography {
-  val BIT_SIZE = 512
+  val BIT_SIZE = 64
   def encrypt(key: BigInt, modulus:BigInt, generator:BigInt, message: BigInt) = {
     (key * generator.modPow(message,modulus)) % modulus
   }

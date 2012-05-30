@@ -19,11 +19,13 @@ object Client {
     s.close()
   }
 
-  def getStates(): List[State] = {
+  def getStates(): (BigInt,List[State]) = {
     val s = new Socket(InetAddress.getByName("localhost"), 8888)
     val in = new BufferedSource(s.getInputStream()).getLines()
     val out = new PrintStream(s.getOutputStream())  
     var bidStrings = List[String]()
+    
+    val current_pub_key = BigInt(in.next())
     var bidString = in.next()
     
     while (bidString != "EOM") {
@@ -31,14 +33,15 @@ object Client {
       bidString = in.next()
     }
     s.close()
-    bidStrings.map(State.fromString)
+    (current_pub_key, bidStrings.map(State.fromString))
   }
 
-  def sendStates(states: Array[State]) {
+  def sendStates(current_pub_key:BigInt, states: Array[State]) {
     val s = new Socket(InetAddress.getByName("localhost"), 8888)
     val in = new BufferedSource(s.getInputStream())
     val out = new PrintStream(s.getOutputStream())  
     //out.println(client.keypair._2)
+    out.println(current_pub_key)
     states.foreach(out.println)
     out.println("EOM")
     out.flush()
@@ -82,9 +85,12 @@ object Client {
     readLine
 
     
-    val states = getStates()
+    val info = getStates()
+    val current_pub_key = info._1
+    val states = info._2
     println("What's your bid? 1-" + bids)
-    sendStates(client.pickStates(states.toArray, readInt, bids))
+    val chosen = client.pickStates(current_pub_key,states.toArray, readInt, bids)
+    sendStates(chosen._1,chosen._2)
   }
 }
 
@@ -93,14 +99,13 @@ class Client(val index: Int,
 	     val pub_key: List[BigInt]) {
 
 
-  def pickStates(oldStates: Array[State], bid: Int, bids: Int): Array[State] = {
+  def pickStates(current_pub_key:BigInt, oldStates: Array[State], bid: Int, bids: Int): (BigInt,Array[State]) = {
    // println("p="+pub_key(0))
    // println("q="+pub_key(1))
    // println("g="+pub_key(2))
     val newStates = State.genStates(index, bids)
-    val current_pub_key = oldStates(0).pub_key
-    println("current pub key = "+current_pub_key)
-    val new_pub_key = Cryptography.strip_pub_key(oldStates(0).pub_key,
+    println("Current pub key = " + current_pub_key)
+    val new_pub_key = Cryptography.strip_pub_key(current_pub_key,
 					         priv_key,
 					         pub_key(2),
 					         pub_key(0),
@@ -116,14 +121,13 @@ class Client(val index: Int,
       newState.price_enc = oldState.price_enc
       newState.c_1_winner = oldState.c_1_winner
       newState.c_1_price = oldState.c_1_price
-      newState.pub_key = new_pub_key
-      newState.reencryptState(priv_key, pub_key(0),pub_key(1),pub_key(2))
+      newState.reencryptState(priv_key, new_pub_key, pub_key(0),pub_key(1),pub_key(2))
       newStates(i) = newState
     }
     val finish = Platform.currentTime
     val elapsed = finish-start
     println("time elapsed: " + elapsed+"ms")
 
-    newStates
+    (new_pub_key,newStates)
   }
 }

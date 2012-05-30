@@ -10,7 +10,7 @@ object State {
 
   def fromString(string: String): State = {
     val values = string.split(" ")
-    new State(values(0).toInt, values(1).toInt, values(2).toInt, BigInt(values(3)), BigInt(values(4)),BigInt(values(5)),BigInt(values(6)),BigInt(values(7))) 
+    new State(values(0).toInt, values(1).toInt, values(2).toInt, BigInt(values(3)), BigInt(values(4)),BigInt(values(5)),BigInt(values(6))) 
   }
 
 }
@@ -22,10 +22,10 @@ class State(
     var winner_enc: BigInt,
     var price_enc: BigInt,
     var c_1_winner: BigInt,
-    var c_1_price: BigInt,
-    var pub_key:BigInt) {
+    var c_1_price: BigInt){ 
+
   def this(high_bidder: Int, high_bid: Int, next_bid: Int) =
-    this(high_bidder, high_bid, next_bid, BigInt(high_bidder), BigInt(next_bid),BigInt(0),BigInt(0),BigInt(0))
+    this(high_bidder, high_bid, next_bid, BigInt(high_bidder), BigInt(next_bid),BigInt(0),BigInt(0))
 
   def encryptState(key: BigInt, modulus:BigInt,generator:BigInt) {
     winner_enc = Cryptography.encrypt(key, modulus, generator, BigInt(high_bidder))
@@ -38,7 +38,7 @@ class State(
     price_enc = Cryptography.decrypt(c_1_price,key,generator,modulus,price_enc)
   }
 
-  def reencryptState(key: BigInt, modulus:BigInt,q:BigInt, generator:BigInt) {
+  def reencryptState(key: BigInt, pub_key:BigInt, modulus:BigInt,q:BigInt, generator:BigInt) {
     //println("this state is == " + toString())
     val winner_things = Cryptography.recrypt(c_1_winner,
 					 key,
@@ -80,7 +80,7 @@ class State(
   }
 
   override def toString(): String =
-    List(high_bidder, high_bid, next_bid, winner_enc, price_enc,c_1_winner,c_1_price,pub_key).map(_.toString).reduceLeft((x, y) => x + " " + y)
+    List(high_bidder, high_bid, next_bid, winner_enc, price_enc,c_1_winner,c_1_price).map(_.toString).reduceLeft((x, y) => x + " " + y)
 
   override def equals(other: Any): Boolean = {
     other match {

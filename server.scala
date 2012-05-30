@@ -61,15 +61,16 @@ object Server {
   }
 
 
-  def takeTurn(results: Array[State],
-               player: Int,
+  def takeTurn(auction:Auction,
+	       player: Int,
                bids: Int,
                server: ServerSocket): Array[State] = {
     val s = server.accept()
     println("Sending bids to player " + player)
     val in = new BufferedSource(s.getInputStream()).getLines()
     val out = new PrintStream(s.getOutputStream())
-    results.foreach(out.println)
+    out.println(auction.current_pub_key)
+    auction.states.foreach(out.println)
     out.println("EOM")
     out.flush()
     s.close()
@@ -78,6 +79,7 @@ object Server {
     val in2 = new BufferedSource(s2.getInputStream()).getLines()
  
     var bidStrings = List[String]()
+    auction.current_pub_key = BigInt(in2.next())
     var bidString = in2.next()
     while (bidString != "EOM") {
       bidStrings = bidString :: bidStrings
@@ -94,15 +96,15 @@ object Server {
     for (i <- 0 until auction.players) {
       val player = auction.players - 1 - i
       println("Waiting for answer from player " + player)
-      auction.states =  takeTurn(auction.states, player, auction.bids, server)
+      auction.states =  takeTurn(auction, player, auction.bids, server)
   //    auction.states.foreach(x => println(x.winner_enc + " ::: "+ x.price_enc))
     }
     println("Hit enter to do the final decryption")
     readLine
     println("Results: ")
     for(state <- auction.states){
-      state.pub_key = Cryptography.strip_pub_key(state.pub_key, priv_key, g, p, q)
-      state.reencryptState(priv_key, p,q, g)
+      auction.current_pub_key = Cryptography.strip_pub_key(auction.current_pub_key, priv_key, g, p, q)
+      state.reencryptState(priv_key, auction.current_pub_key,p,q, g)
       println("WINNER [g^winner]:d " + state.winner_enc)
       println("PRICE [g^price]: " + state.price_enc)
       println("WINNER: " + findPow(state.winner_enc,g,p))
