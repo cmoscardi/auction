@@ -89,44 +89,36 @@ object Server {
     bidStrings.map(State.fromString).toArray
   }
 
-  def runAuction(auction: Auction, server: ServerSocket,
-      		 p:BigInt,q:BigInt, g:BigInt, priv_key:BigInt) {
+  def runAuction(auction: Auction, 
+      		 server: ServerSocket,
+      		 p:BigInt,
+		 q:BigInt, 
+		 g:BigInt, 
+		 priv_key:BigInt) {
     println("Running auction")
  
     for (i <- 0 until auction.players) {
       val player = auction.players - 1 - i
       println("Waiting for answer from player " + player)
       auction.states =  takeTurn(auction, player, auction.bids, server)
-  //    auction.states.foreach(x => println(x.winner_enc + " ::: "+ x.price_enc))
     }
     println("Hit enter to do the final decryption")
     readLine
     println("Results: ")
     for(state <- auction.states){
-      auction.current_pub_key = Cryptography.strip_pub_key(auction.current_pub_key, priv_key, g, p, q)
-      state.reencryptState(priv_key, auction.current_pub_key,p,q, g)
+      auction.current_pub_key = Cryptography.strip_pub_key(priv_key, 
+      			      			           auction.current_pub_key,
+							   p, q, g)
+      state.reencryptState(priv_key, 
+      			   auction.current_pub_key,
+			   p, q, g)
       println("WINNER [g^winner]:d " + state.winner_enc)
       println("PRICE [g^price]: " + state.price_enc)
-      println("WINNER: " + findPow(state.winner_enc,g,p))
-      println("PRICE: " + findPow(state.price_enc,g,p))
+      println("WINNER: " + Cryptography.findPow(state.winner_enc,g,p))
+      println("PRICE: " + Cryptography.findPow(state.price_enc,g,p))
     }
   }
 
-  def findPow(value:BigInt,g:BigInt,p:BigInt):Int = { 
-    var i = 0
-    var number = BigInt(1)
-    var found = false
-    while(!found){ 
-      if(number==value){ 
-	found = true
-      }
-      else{ 
-	number = (number*g)%p
-	i=i+1
-      }
-    }
-    i //return
-  }
   def main(args: Array[String]) {
     println("Initializing server")
     val server = new ServerSocket(8888)

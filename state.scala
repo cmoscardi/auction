@@ -38,31 +38,27 @@ class State(
     price_enc = Cryptography.decrypt(c_1_price,key,generator,modulus,price_enc)
   }
 
-  def reencryptState(key: BigInt, pub_key:BigInt, modulus:BigInt,q:BigInt, generator:BigInt) {
-    //println("this state is == " + toString())
+  def reencryptState(key: BigInt, pub_key:BigInt, p:BigInt,q:BigInt, g:BigInt) {
+
     val winner_things = Cryptography.recrypt(c_1_winner,
+					 winner_enc,
 					 key,
 					 pub_key,
-					 q,
-					 generator, 
-					 modulus,
+					 p, q, g)
 					 
-					 winner_enc)
 
     val price_enc_things = Cryptography.recrypt(c_1_price,
+				            price_enc,
 					    key,
 					    pub_key,
-					    q,
-					    generator, 
-					    modulus, 
-					    price_enc)
-
-    winner_enc = winner_things._1
-    c_1_winner = winner_things._2
-
-    price_enc = price_enc_things._1
-    c_1_price = price_enc_things._2
-
+					    p, q, g) 
+					   
+    c_1_winner = winner_things._1					   
+    winner_enc = winner_things._2
+    
+    c_1_price = price_enc_things._1
+    price_enc = price_enc_things._2
+    
   }
 
   def afterBid(player: Int, bid: Int): State = {

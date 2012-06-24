@@ -1,7 +1,7 @@
 import scala.util.Random
 
 object Cryptography {
-  val BIT_SIZE = 64
+  val BIT_SIZE = 512
   def encrypt(key: BigInt, modulus:BigInt, generator:BigInt, message: BigInt) = {
     (key * generator.modPow(message,modulus)) % modulus
   }
@@ -11,25 +11,44 @@ object Cryptography {
     val multiply = c_1.modPow(q,modulus)
     (value * multiply)%modulus
   }
-  def strip_pub_key(pub_key:BigInt, priv_key:BigInt, generator:BigInt, modulus:BigInt,q:BigInt) = { 
-    val inv = generator.modPow(q-priv_key,modulus)
-    (pub_key*inv)%modulus    
+  def strip_pub_key(priv_key:BigInt, pub_key:BigInt, p:BigInt,q:BigInt,g:BigInt) = { 
+    val inv = g.modPow(q-priv_key,p)
+    (pub_key*inv) % p
   }
   //strips and re-randomizes
-  def recrypt(c_1:BigInt, 
+  def recrypt(c_1:BigInt,
+	      value:BigInt, 
 	      key: BigInt, 
 	      pub_key:BigInt,
+	      p:BigInt,
 	      q:BigInt,
-	      generator:BigInt, 
-	      modulus:BigInt, 
-	      value:BigInt):(BigInt,BigInt) = { 
-    val inv = c_1.modPow(q-key,modulus)
+	      g:BigInt):(BigInt,BigInt) = { 
+    val inv = c_1.modPow(q-key,p)
     val rnd = new Random()
     //somewhat abusive of the priv_key function
     val y = priv_key(q,rnd)
-    val new_c_1 = (c_1 * generator.modPow(y,modulus))%modulus
-    val new_encryption = ((value * inv) * pub_key.modPow(y,modulus))%modulus    
-    (new_encryption, new_c_1)
+    val new_c_1 = (c_1 * g.modPow(y,p))%p
+    val new_encryption = ((value * inv) * pub_key.modPow(y,p))%p    
+    (new_c_1,new_encryption)
+  }
+  
+  //given g^x, finds x. 
+  def findPow(value:BigInt,
+	      g:BigInt,
+	      p:BigInt):Int = { 
+      var number = g
+      var power = 1
+      var found = false
+      while(!found){
+	if(number==value){
+	  found = true
+	}
+	else {
+	  number = number * g
+	  power = power +1
+	}
+      }
+      power
   }
   
 

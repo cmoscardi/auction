@@ -99,29 +99,32 @@ class Client(val index: Int,
 	     val pub_key: List[BigInt]) {
 
 
-  def pickStates(current_pub_key:BigInt, oldStates: Array[State], bid: Int, bids: Int): (BigInt,Array[State]) = {
-   // println("p="+pub_key(0))
-   // println("q="+pub_key(1))
-   // println("g="+pub_key(2))
+  def pickStates(current_pub_key:BigInt, 
+      		 oldStates: Array[State], 
+		 bid: Int, 
+		 bids: Int): (BigInt,Array[State]) = {
+
     val newStates = State.genStates(index, bids)
     println("Current pub key = " + current_pub_key)
-    val new_pub_key = Cryptography.strip_pub_key(current_pub_key,
-					         priv_key,
-					         pub_key(2),
+    val new_pub_key = Cryptography.strip_pub_key(priv_key,
+						 current_pub_key,
 					         pub_key(0),
-						 pub_key(1))
+						 pub_key(1),
+						 pub_key(2))
     println("new pub key = " +new_pub_key)
     val start = Platform.currentTime
     for (i <- 0 until newStates.length) {
       val newState = newStates(i) 
       val oldState = oldStates.find(_ == newState.afterBid(index, bid)).get
-     // println("taking data from: "+ oldState.toString())
-     // println("going into state: " + newState.toString())
       newState.winner_enc = oldState.winner_enc
       newState.price_enc = oldState.price_enc
       newState.c_1_winner = oldState.c_1_winner
       newState.c_1_price = oldState.c_1_price
-      newState.reencryptState(priv_key, new_pub_key, pub_key(0),pub_key(1),pub_key(2))
+      newState.reencryptState(priv_key, 
+      			      new_pub_key, 
+			      pub_key(0),
+			      pub_key(1),
+			      pub_key(2))
       newStates(i) = newState
     }
     val finish = Platform.currentTime
